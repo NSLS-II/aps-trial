@@ -67,7 +67,8 @@ Start three IPython sessions:
     dispatcher.start()  # blocks forever
     ```
 
-3. Take data interactively. Documents will be published.
+3. Take data interactively. Documents will be saved to the databroker for access
+   later *and* published via 0MQ for immediate analysis.
 
     ```
     %run collect.py
