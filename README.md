@@ -75,8 +75,8 @@ Start three IPython sessions:
     RE(count([det]))
     ```
 
-    Each you execute ``RE(count([det]))`` you should see this line printed under
-    ``dispathcer.start()`` in the second window:
+    Each time you execute ``RE(count([det]))`` you should see this line printed
+    under ``dispathcer.start()`` in the second window:
 
     ```
     sum of image data is 25.0
