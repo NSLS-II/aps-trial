@@ -161,28 +161,34 @@ RE = RunEngine({})
 RE.subscribe(db.insert)
 db.reg.register_handler('DEMO_HDF5', RawHandler)
 
+
+def encode_hack(doc):
+    # Avoid mutating the original and affecting any other subscribers.
+    doc['data'] = doc['data'].copy()
+    # Replace any datum_ids with filenames:
+    for key in doc['filled']:
+        for _ in range(50):
+            try:
+                ret = db.reg.retrieve(doc['data'][key])
+                filepath, resource_kwargs, datum_kwargs = ret
+                doc['data'][key] = filepath
+            except DatumNotFound:
+                # The database probably just doesn't have it yet.
+                # Wait and try again.
+                time.sleep(0.1)
+            else:
+                break
+        else:
+            raise DatumNotFound("Could not find datum_id "
+                                "%s in Registry" % doc['data'][key])
+    return doc 
+
+
 class CustomPublisher(Publisher):
     "hack-ishly injects filename on way out"
     def __call__(self, name, doc):
-        # Avoid mutating the original and affecting any other subscribers.
         if name == 'event':
-            doc['data'] = doc['data'].copy()
-            # Replace any datum_ids with filenames:
-            for key in doc['filled']:
-                for _ in range(50):
-                    try:
-                        ret = db.reg.retrieve(doc['data'][key])
-                        filepath, resource_kwargs, datum_kwargs = ret
-                        doc['data'][key] = filepath
-                    except DatumNotFound:
-                        # The database probably just doesn't have it yet.
-                        # Wait and try again.
-                        time.sleep(0.1)
-                    else:
-                        break
-                else:
-                    raise DatumNotFound("Could not find datum_id "
-                                        "%s in Registry" % doc['data'][key])
+            doc = encode_hack(doc)
         print('emiited', doc)
         super().__call__(name, doc)
 
